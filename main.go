@@ -1,64 +1,25 @@
 package main
 
 import (
-	"fmt"
-	"time"
+	"io"
+	"log"
+	"os"
 )
 
 func main() {
-	a := -1
-	if a == 0 {
-		fmt.Println("zero")
-	} else if a > 0 {
-		fmt.Println("positive")
-	} else {
-		fmt.Println("negative")
+	file, err := os.Create("log.txt") // ファイル生成
+	if err != nil {
+		log.Fatalln(err) // エラーのログを出力した後にプログラムを強制終了する
 	}
-	for i := 0; i < 5; i++ {
-		fmt.Println(i)
-	}  
+	defer file.Close() // deferで関数の終了時するタイミングで実行される
+	flags := log.Lshortfile // ログにファイル名と行番号を含める
+	warnLogger := log.New(io.MultiWriter(file, os.Stderr), "WARN: ", flags)
+	errorLogger := log.New(io.MultiWriter(file, os.Stderr), "ERROR: ", flags)
 
-	var i int
-	for {
-		if i > 3 {
-			break
-		}
-		fmt.Println(i)
-		i += 1
-		time.Sleep(300 * time.Millisecond)
-	}
+	warnLogger.Println("warning A")
 
-	loop:
-		for i := 0; i < 10; i++ {
-			switch i {
-			case 2:
-				continue
-			case 3:
-				continue
-			case 8:
-				break loop
-			default:
-				fmt.Printf("%v ", i)
-			}
-		}
-		fmt.Printf("\n")
-
-		items := []item{
-			{price: 10.},
-			{price: 20.},
-			{price: 30.},
-		}
-		for _, i := range items {
-			i.price *= 1.1
-		}
-		fmt.Printf("%+v\n", items)
-		for i := range items {
-			items[i].price *=1.1
-		}
-		fmt.Printf("%+v\n", items)
+	errorLogger.Fatalln("critical error") // Fatalln: プログラムを強制終了する
 }
 
-type item struct {
-	price float32
-}
+
 
