@@ -2,63 +2,55 @@ package main
 
 import (
 	"fmt"
-	"time"
+
+	"golang.org/x/exp/constraints"
 )
 
-func main() {
-	a := -1
-	if a == 0 {
-		fmt.Println("zero")
-	} else if a > 0 {
-		fmt.Println("positive")
-	} else {
-		fmt.Println("negative")
+// generics: 肩の値を一般化できる
+type customConstraints interface {
+	~int | int16 | float32 | float64 | string // ~をつけると、別名型(この場合はNewInt)も許容する
+}
+type NewInt int
+
+
+func add[T customConstraints](x, y T) T {
+	return x + y
+}
+func min[T constraints.Ordered](x, y T) T {
+	if x < y {
+		return x
 	}
-	for i := 0; i < 5; i++ {
-		fmt.Println(i)
-	}  
-
-	var i int
-	for {
-		if i > 3 {
-			break
-		}
-		fmt.Println(i)
-		i += 1
-		time.Sleep(300 * time.Millisecond)
+	return y 
+}
+func sumValues[K int | string, V constraints.Float | constraints.Integer](m map[K]V) V {
+	var sum V
+	for _, v := range m {
+		sum += v
 	}
-
-	loop:
-		for i := 0; i < 10; i++ {
-			switch i {
-			case 2:
-				continue
-			case 3:
-				continue
-			case 8:
-				break loop
-			default:
-				fmt.Printf("%v ", i)
-			}
-		}
-		fmt.Printf("\n")
-
-		items := []item{
-			{price: 10.},
-			{price: 20.},
-			{price: 30.},
-		}
-		for _, i := range items {
-			i.price *= 1.1
-		}
-		fmt.Printf("%+v\n", items)
-		for i := range items {
-			items[i].price *=1.1
-		}
-		fmt.Printf("%+v\n", items)
+	return sum
 }
 
-type item struct {
-	price float32
+func main() {
+	fmt.Printf("%v\n", add(1, 2))
+	fmt.Printf("%v\n", add(1.1, 2.1))
+	fmt.Printf("%v\n", add("file", ".txt"))
+	var i1, i2 NewInt = 3, 4
+	fmt.Printf("%v\n", add(i1, i2))
+	fmt.Printf("%v\n", add(i1, i2))
+	fmt.Printf("%v\n", min(i1, i2))
+	m1 := map[string]uint{
+		"A": 1,
+		"B": 2,
+		"C": 3,
+	}
+	m2 := map[string]float32{
+		"A": 1.23,
+		"B": 4.56,
+		"C": 7.89,
+	}
+	fmt.Println(sumValues(m1))
+	fmt.Println(sumValues(m2))
+
+
 }
 
